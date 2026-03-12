@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SECTOR 43-48 // INTERNAL ADVISORY</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* ═══════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════ */
+:root {
+  --cyan: #00FFFF;
+  --cyan-dim: rgba(0,255,255,0.5);
+  --cyan-faint: rgba(0,255,255,0.08);
+  --cyan-border: rgba(0,255,255,0.2);
+  --glow: 0 0 15px rgba(0,255,255,0.5);
+  --glow-lg: 0 0 30px rgba(0,255,255,0.4), 0 0 60px rgba(0,255,255,0.15);
+  --red: #FF2A2A;
+  --bg: #000000;
+  --surface: #080c0c;
+  --card: #0a0f0f;
+  --elevated: #0f1515;
+  --border: rgba(0,255,255,0.15);
+  --text: #e4f0f0;
+  --muted: #4a6060;
+  --sans: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Orbitron', monospace;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  overflow-x: hidden;
+  cursor: crosshair;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════
+   MATRIX CANVAS BACKGROUND
+═══════════════════════════════ */
+#matrix-bg {
+  position: fixed;
+  inset: 0;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════
+   SCANLINE OVERLAY
+═══════════════════════════════ */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,255,255,0.015) 3px,
+    rgba(0,255,255,0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+  animation: scanShift 12s linear infinite;
+}
+@keyframes scanShift {
+  from { background-position: 0 0; }
+  to   { background-position: 0 200px; }
+}
+
+/* Vignette */
+.vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.8) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════
+   TYPOGRAPHY HELPERS
+═══════════════════════════════ */
+.font-display { font-family: var(--display); }
+.font-mono    { font-family: var(--mono); }
+.glow-text    { color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 25px rgba(0,255,255,0.4); }
+.glow-text-sm { color: var(--cyan); text-shadow: 0 0 6px rgba(0,255,255,0.6); }
+
+/* ═══════════════════════════════
+   HEADER
+═══════════════════════════════ */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(0,255,255,0.08), 0 4px 30px rgba(0,0,0,0.6);
+}
+
+.header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--display);
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--cyan);
+  text-shadow: 0 0 14px var(--cyan), 0 0 30px rgba(0,255,255,0.3);
+  animation: flicker 5s infinite;
+}
+
+@keyframes flicker {
+  0%,94%,100% { opacity:1; }
+  95% { opacity:0.7; }
+  96% { opacity:1; }
+  97.5% { opacity:0.4; }
+  98% { opacity:1; }
+}
+
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red), 0 0 20px rgba(255,42,42,0.4);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%,100% { transform: scale(1); opacity:1; }
+  50% { transform: scale(1.4); opacity:0.5; }
+}
+
+.ping-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: blink 1.1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ═══════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════ */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.section-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(0,255,255,0.4), transparent);
+}
+.section-tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  border: 1px solid rgba(0,255,255,0.1);
+  border-radius: 3px;
+  padding: 2px 8px;
+}
+
+/* ═══════════════════════════════
+   HERO
+═══════════════════════════════ */
+.hero-wrap {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+.hero-wrap img {
+  width: 100%;
+  max-height: 80vh;
+  object-fit: cover;
+  display: block;
+  opacity: 0.88;
+  filter: contrast(1.05) saturate(1.1);
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 40%, transparent 70%);
+}
+.hero-corner {
+  position: absolute;
+  width: 28px; height: 28px;
+}
+.hero-corner.tl { top:16px; left:16px; border-top:2px solid var(--cyan); border-left:2px solid var(--cyan); }
+.hero-corner.tr { top:16px; right:16px; border-top:2px solid var(--cyan); border-right:2px solid var(--cyan); }
+.hero-corner.bl { bottom:16px; left:16px; border-bottom:2px solid var(--cyan); border-left:2px solid var(--cyan); }
+.hero-corner.br { bottom:16px; right:16px; border-bottom:2px solid var(--cyan); border-right:2px solid var(--cyan); }
+
+.hero-hud {
+  position: absolute;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.access-btn {
+  font-family: var(--display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #000;
+  background: var(--cyan);
+  border: none;
+  padding: 12px 32px;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow: var(--glow-lg);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.access-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 40px rgba(0,255,255,0.7), 0 0 80px rgba(0,255,255,0.3);
+}
+
+/* ═══════════════════════════════
+   INTEL DOSSIER
+═══════════════════════════════ */
+.dossier {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: var(--glow);
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+.dossier:hover { box-shadow: var(--glow-lg); }
+
+.dossier-header {
+  background: rgba(0,255,255,0.05);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dossier-title {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  color: var(--cyan);
+}
+.dossier-meta {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+.dossier-body {
+  padding: 20px 18px;
+  font-size: 0.82rem;
+  line-height: 1.8;
+  color: #c0cece;
+}
+.dossier-body .heading {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(0,255,255,0.4);
+  margin-bottom: 10px;
+  display: block;
+}
+.dossier-body strong { color: #fff; }
+.dossier-body em { color: var(--cyan); font-style: normal; }
+
+/* Typewriter */
+.typewriter-text {
+  overflow: hidden;
+  border-right: 2px solid var(--cyan);
+  white-space: nowrap;
+  animation: typeOut 3.5s steps(60,end) both, blinkCursor 0.8s step-end infinite;
+  max-width: 100%;
+}
+.typewriter-text-2 {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typeOut 3.5s steps(55,end) 0.3s both;
+  max-width: 100%;
+}
+@keyframes typeOut {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+@keyframes blinkCursor {
+  0%,100% { border-color: var(--cyan); }
+  50% { border-color: transparent; }
+}
+
+.dossier-footer {
+  border-top: 1px solid rgba(0,255,255,0.08);
+  padding: 8px 18px;
+  display: flex;
+  gap: 16px;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--muted);
+}
+.dossier-footer .ok { color: #22c55e; }
+
+/* ═══════════════════════════════
+   GALLERY
+═══════════════════════════════ */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .gallery-grid { grid-template-columns: 1fr; }
+}
+
+.g-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--glow);
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.g-card:hover {
+  border-color: var(--cyan);
+  box-shadow: var(--glow-lg);
+  animation: glitch 0.18s steps(2) infinite;
+}
+@keyframes glitch {
+  0%   { transform: translate(0,0); }
+  20%  { transform: translate(-3px, 1px); filter: hue-rotate(30deg); }
+  40%  { transform: translate(3px, -1px); filter: hue-rotate(-20deg); }
+  60%  { transform: translate(-2px, 2px); }
+  80%  { transform: translate(2px, -2px); filter: hue-rotate(10deg); }
+  100% { transform: translate(0,0); filter: none; }
+}
+
+.g-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease, filter 0.3s;
+}
+.g-card:hover img {
+  transform: scale(1.06);
+  filter: brightness(1.06) saturate(1.15) contrast(1.02);
+}
+
+.g-card-bar {
+  padding: 7px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(0,255,255,0.08);
+  background: rgba(0,255,255,0.03);
+}
+.g-card-bar .lbl {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.g-card-bar .num {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--cyan);
+}
+
+/* DECRYPTED badge */
+.decrypt-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-family: var(--mono);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #000;
+  background: var(--cyan);
+  padding: 2px 8px;
+  border-radius: 2px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+.g-card:hover .decrypt-badge {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Glitch scan on hover */
+.g-card:hover::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: rgba(0,255,255,0.5);
+  animation: glitchScan 0.6s linear infinite;
+  pointer-events: none;
+}
+@keyframes glitchScan {
+  0%   { top: -2px; }
+  100% { top: 100%; }
+}
+
+/* ═══════════════════════════════
+   SQUAD ROSTER
+═══════════════════════════════ */
+.roster-table {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: var(--glow);
+  overflow: hidden;
+}
+.roster-head {
+  background: rgba(0,255,255,0.06);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: grid;
+  grid-template-columns: 40px 1fr 180px 130px 100px;
+  gap: 16px;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  color: rgba(0,255,255,0.45);
+}
+@media (max-width: 700px) {
+  .roster-head { grid-template-columns: 32px 1fr 80px; }
+  .roster-head .hide-mob, .roster-row .hide-mob { display: none; }
+}
+
+.roster-row {
+  padding: 14px 20px;
+  display: grid;
+  grid-template-columns: 40px 1fr 180px 130px 100px;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background 0.2s;
+  cursor: default;
+}
+@media (max-width: 700px) {
+  .roster-row { grid-template-columns: 32px 1fr 80px; }
+}
+.roster-row:last-child { border-bottom: none; }
+.roster-row:hover { background: rgba(0,255,255,0.04); }
+
+.roster-rank {
+  font-family: var(--display);
+  font-size: 0.7rem;
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(0,255,255,0.4);
+}
+.roster-name {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.roster-role {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+}
+.stat-bar {
+  height: 3px;
+  background: rgba(0,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.stat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), rgba(0,255,255,0.4));
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0,255,255,0.5);
+}
+
+.tier-badge {
+  font-family: var(--display);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 2px;
+  text-align: center;
+}
+.tier-s { background: rgba(0,255,255,0.15); color: var(--cyan); border: 1px solid rgba(0,255,255,0.3); }
+.tier-a { background: rgba(255,200,0,0.1); color: #ffc800; border: 1px solid rgba(255,200,0,0.25); }
+
+/* member photo */
+.member-photo {
+  width: 36px; height: 36px;
+  border-radius: 3px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════
+   FOOTER
+═══════════════════════════════ */
+footer {
+  border-top: 1px solid rgba(0,255,255,0.1);
+  padding: 18px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+}
+footer span { color: var(--cyan); }
+
+/* ═══════════════════════════════
+   LIGHTBOX
+═══════════════════════════════ */
+#lb {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.96);
+  backdrop-filter: blur(20px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#lb.open { display: flex; }
+#lb img {
+  max-width: 90vw; max-height: 86vh;
+  border-radius: 4px;
+  border: 1px solid rgba(0,255,255,0.4);
+  box-shadow: 0 0 60px rgba(0,255,255,0.25);
+  object-fit: contain;
+}
+.lb-btn {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.lb-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+#lb-close { top: 16px; right: 16px; }
+#lb-prev { left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; padding: 12px 16px; }
+#lb-next { right: 14px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; padding: 12px 16px; }
+#lb-count {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 0.58rem; color: var(--muted);
+  background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 100px; padding: 4px 14px; letter-spacing: 0.12em;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: var(--cyan); }
+
+/* layout wrapper */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+section { position: relative; z-index: 2; }
+</style>
+</head>
+<body>
+
+<!-- Matrix Canvas -->
+<canvas id="matrix-bg"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<!-- ═══════════════════════════
+     HEADER
+═══════════════════════════ -->
+<header>
+  <div class="header-inner">
+
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="live-dot"></div>
+      <span class="logo">SECTOR 43-48 // INTERNAL ADVISORY</span>
+      <span style="font-family:var(--mono);font-size:0.52rem;padding:2px 8px;border-radius:2px;border:1px solid rgba(255,42,42,0.3);color:#ff6060;letter-spacing:0.12em;display:none;" id="live-label">LIVE</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:0.6rem;color:var(--muted);">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="ping-dot"></div>
+        <span>Ping: <span id="ping" style="color:var(--cyan)">14ms</span></span>
+      </div>
+      <div style="display:none;align-items:center;gap:6px;" class="sm-show">
+        <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;"></div>
+        <span style="color:#22c55e;">ONLINE</span>
+      </div>
+      <div id="clock" style="color:rgba(0,255,255,0.35);font-size:0.55rem;letter-spacing:0.1em;"></div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ═══════════════════════════
+     HERO
+═══════════════════════════ -->
+<div class="hero-wrap">
+  <img src="file0.png" alt="Sector 43-48 Cover">
+  <div class="hero-overlay"></div>
+  <div class="hero-corner tl"></div>
+  <div class="hero-corner tr"></div>
+  <div class="hero-corner bl"></div>
+  <div class="hero-corner br"></div>
+  <!-- HUD scanline -->
+  <div style="position:absolute;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,rgba(0,255,255,0.3),transparent);animation:heroScan 4s linear infinite;pointer-events:none;"></div>
+  <div class="hero-hud">
+    <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.22em;color:rgba(0,255,255,0.5);">// CLASSIFIED ARCHIVE LOADED</div>
+    <a href="#intel" class="access-btn">▶ ACCESS INTEL</a>
+    <div style="font-family:var(--mono);font-size:0.52rem;color:rgba(255,255,255,0.25);letter-spacing:0.15em;">SCROLL TO DECRYPT</div>
+  </div>
+</div>
+<style>
+@keyframes heroScan {
+  from { top: 0; }
+  to   { top: 100%; }
+}
+@media (min-width:640px) { .sm-show { display:flex!important; } #live-label { display:inline!important; } }
+</style>
+
+<!-- ═══════════════════════════
+     INTEL DOSSIER
+═══════════════════════════ -->
+<section id="intel" style="padding:60px 0 40px;">
+  <div class="wrap">
+
+    <div class="section-header">
+      <span style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.2em;color:var(--cyan);white-space:nowrap;">// INTEL LOGS</span>
+      <div class="section-rule"></div>
+      <span class="section-tag">02 DOSSIERS</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- Dossier 1 -->
+      <div class="dossier" style="grid-column: span 1;">
+        <div class="dossier-header">
+          <span class="dossier-title">FILE_01 // HABITS OF MIND</span>
+          <span class="dossier-meta">CLASS: PHI-ENG-01 · DECRYPTED</span>
+        </div>
+        <div class="dossier-body">
+          <span class="heading typewriter-text">INTEL: HABITS OF MIND</span>
+          <div style="overflow:hidden;">
+            <p style="animation:fadeUp 0.8s 3.5s ease both;opacity:0;">
+              Engineering isn't just a job; it's <strong>a way of seeing</strong>. Our first inquiry focused on the 'Habits of Mind'—the cognitive patterns like <em>systems thinking</em>, ethical consideration, and creative problem-solving.
+            </p>
+            <p style="margin-top:12px;animation:fadeUp 0.8s 3.9s ease both;opacity:0;">
+              We explored how an engineer's mental framework must adapt to the <em>'Upside Down'</em> of unforeseen consequences, ensuring that the <strong>'How' never outpaces the 'Why.'</strong>
+            </p>
+          </div>
+        </div>
+        <div class="dossier-footer">
+          <span class="ok">✓ VERIFIED</span>
+          <span>SHA: A1B2C3D4</span>
+          <span>CLEARANCE: LVL-7</span>
+        </div>
+      </div>
+
+      <!-- Dossier 2 -->
+      <div class="dossier" style="grid-column: span 1;">
+        <div class="dossier-header">
+          <span class="dossier-title">FILE_02 // ONTOLOGY</span>
+          <span class="dossier-meta">CLASS: PHI-ENG-02 · DECRYPTED</span>
+        </div>
+        <div class="dossier-body">
+          <span class="heading typewriter-text-2">INTEL: ONTOLOGY</span>
+          <div style="overflow:hidden;">
+            <p style="animation:fadeUp 0.8s 3.8s ease both;opacity:0;">
+              What is a machine? Is it just metal, or is it <strong>an extension of human intent?</strong> Our second inquiry delved into <em>'Ontology'</em>—the study of existence as it pertains to man-made artifacts.
+            </p>
+            <p style="margin-top:12px;animation:fadeUp 0.8s 4.2s ease both;opacity:0;">
+              We interrogated the boundary between the natural and the artificial, defining how engineered objects occupy a unique space in our reality as <em>'Social Objects'</em> with their own inherent logic.
+            </p>
+          </div>
+        </div>
+        <div class="dossier-footer">
+          <span class="ok">✓ VERIFIED</span>
+          <span>SHA: E5F6A7B8</span>
+          <span>CLEARANCE: LVL-7</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<style>
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@media (max-width:640px) {
+  section#intel > .wrap > div { grid-template-columns:1fr!important; }
+}
+</style>
+
+<!-- ═══════════════════════════
+     GALLERY
+═══════════════════════════ -->
+<section style="padding:20px 0 50px;">
+  <div class="wrap">
+
+    <div class="section-header">
+      <span style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.2em;color:var(--cyan);white-space:nowrap;">// CLASSIFIED GALLERY</span>
+      <div class="section-rule"></div>
+      <span class="section-tag">09 FILES</span>
+    </div>
+
+    <div class="gallery-grid">
+
+      <div class="g-card" onclick="openLb(0)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file0.png" alt="Cover" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">COVER // SECTOR 43-48</span><span class="num">00</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(1)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file1.png" alt="Table of Contents" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">TABLE OF CONTENT</span><span class="num">01</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(2)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file2.png" alt="Philosophy" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">PHILOSOPHY OF ENGINEERING</span><span class="num">02</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(3)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file3.png" alt="Vision" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">VISION</span><span class="num">03</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(4)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file4.png" alt="Members" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">MEMBERS OF THE CORD</span><span class="num">04</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(5)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file5.png" alt="Skills" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">SKILLS ACQUIRED</span><span class="num">05</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(6)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file6.png" alt="Project 1" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">PROFESSIONAL PROJECT-1</span><span class="num">06</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(7)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file7.png" alt="Project 2" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">PROFESSIONAL PROJECT-2</span><span class="num">07</span></div>
+      </div>
+
+      <div class="g-card" onclick="openLb(8)">
+        <div style="position:relative;overflow:hidden;">
+          <img src="file8.png" alt="Contact" loading="lazy">
+          <div class="decrypt-badge">DECRYPTED</div>
+        </div>
+        <div class="g-card-bar"><span class="lbl">CONTACT // SIGNAL ENDPOINT</span><span class="num">08</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════
+     SQUAD ROSTER
+═══════════════════════════ -->
+<section style="padding:10px 0 60px;">
+  <div class="wrap">
+
+    <div class="section-header">
+      <span style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.2em;color:var(--cyan);white-space:nowrap;">// SQUAD ROSTER</span>
+      <div class="section-rule"></div>
+      <span class="section-tag">6 OPERATIVES</span>
+    </div>
+
+    <div class="roster-table">
+      <!-- Head -->
+      <div class="roster-head">
+        <div>#</div>
+        <div>OPERATIVE</div>
+        <div class="hide-mob">SPECIALTY</div>
+        <div class="hide-mob">CAPABILITY</div>
+        <div>TIER</div>
+      </div>
+
+      <!-- Mayuri -->
+      <div class="roster-row">
+        <div class="roster-rank">01</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img class="member-photo" src="member1.png" alt="Mayuri" onerror="this.style.display='none'">
+          <div>
+            <div class="roster-name">MAYURI N</div>
+            <div class="roster-role">Lead Architect &nbsp;·&nbsp; Logic: 99</div>
+          </div>
+        </div>
+        <div class="hide-mob" style="font-family:var(--mono);font-size:0.62rem;color:#8ab0b0;">Ethical Synthesis</div>
+        <div class="hide-mob">
+          <div class="stat-label">99 / 100</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:99%;"></div></div>
+        </div>
+        <div><span class="tier-badge tier-s">S-TIER</span></div>
+      </div>
+
+      <!-- Pragati -->
+      <div class="roster-row">
+        <div class="roster-rank">02</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img class="member-photo" src="member2.png" alt="Pragati" onerror="this.style.display='none'">
+          <div>
+            <div class="roster-name">PRAGATI BHATTACHARJEE</div>
+            <div class="roster-role">System Ethicist &nbsp;·&nbsp; Ethics: 100</div>
+          </div>
+        </div>
+        <div class="hide-mob" style="font-family:var(--mono);font-size:0.62rem;color:#8ab0b0;">Epistemological Design</div>
+        <div class="hide-mob">
+          <div class="stat-label">100 / 100</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:100%;"></div></div>
+        </div>
+        <div><span class="tier-badge tier-s">S-TIER</span></div>
+      </div>
+
+      <!-- Riya -->
+      <div class="roster-row">
+        <div class="roster-rank">03</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img class="member-photo" src="member3.png" alt="Riya" onerror="this.style.display='none'">
+          <div>
+            <div class="roster-name">RIYA NAMBIR</div>
+            <div class="roster-role">Paradigm Strategist &nbsp;·&nbsp; Strategy: 96</div>
+          </div>
+        </div>
+        <div class="hide-mob" style="font-family:var(--mono);font-size:0.62rem;color:#8ab0b0;">Socio-Technical Analysis</div>
+        <div class="hide-mob">
+          <div class="stat-label">96 / 100</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:96%;"></div></div>
+        </div>
+        <div><span class="tier-badge tier-a">A-TIER</span></div>
+      </div>
+
+      <!-- Harini -->
+      <div class="roster-row">
+        <div class="roster-rank">04</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img class="member-photo" src="member4.png" alt="Harini" onerror="this.style.display='none'">
+          <div>
+            <div class="roster-name">BEERLA HARINI</div>
+            <div class="roster-role">Ontology Analyst &nbsp;·&nbsp; Truth: 94</div>
+          </div>
+        </div>
+        <div class="hide-mob" style="font-family:var(--mono);font-size:0.62rem;color:#8ab0b0;">Paradigm Analysis</div>
+        <div class="hide-mob">
+          <div class="stat-label">94 / 100</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:94%;"></div></div>
+        </div>
+        <div><span class="tier-badge tier-a">A-TIER</span></div>
+      </div>
+
+      <!-- Asim -->
+      <div class="roster-row">
+        <div class="roster-rank">05</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img class="member-photo" src="member5.png" alt="Asim" onerror="this.style.display='none'">
+          <div>
+            <div class="roster-name">ASIM NAVEED</div>
+            <div class="roster-role">Infrastructure Logician &nbsp;·&nbsp; Systems: 100</div>
+          </div>
+        </div>
+        <div class="hide-mob" style="font-family:var(--mono);font-size:0.62rem;color:#8ab0b0;">Rapid Prototyping</div>
+        <div class="hide-mob">
+          <div class="stat-label">100 / 100</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:100%;"></div></div>
+        </div>
+        <div><span class="tier-badge tier-s">S-TIER</span></div>
+      </div>
+
+      <!-- Sharvesh -->
+      <div class="roster-row">
+        <div class="roster-rank">06</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img class="member-photo" src="member6.png" alt="Sharvesh" onerror="this.style.display='none'">
+          <div>
+            <div class="roster-name">A SHARVESH RAJU</div>
+            <div class="roster-role">Operational Synthesizer &nbsp;·&nbsp; Synthesis: 98</div>
+          </div>
+        </div>
+        <div class="hide-mob" style="font-family:var(--mono);font-size:0.62rem;color:#8ab0b0;">Framework Architecture</div>
+        <div class="hide-mob">
+          <div class="stat-label">98 / 100</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:98%;"></div></div>
+        </div>
+        <div><span class="tier-badge tier-s">S-TIER</span></div>
+      </div>
+
+    </div>
+
+    <!-- stat summary -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px;text-align:center;box-shadow:var(--glow);">
+        <div style="font-family:var(--display);font-size:1.6rem;font-weight:700;color:var(--cyan);text-shadow:0 0 14px var(--cyan);">6</div>
+        <div style="font-family:var(--mono);font-size:0.55rem;color:var(--muted);margin-top:4px;letter-spacing:0.12em;">OPERATIVES</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px;text-align:center;box-shadow:var(--glow);">
+        <div style="font-family:var(--display);font-size:1.6rem;font-weight:700;color:var(--cyan);text-shadow:0 0 14px var(--cyan);">97.8</div>
+        <div style="font-family:var(--mono);font-size:0.55rem;color:var(--muted);margin-top:4px;letter-spacing:0.12em;">AVG RATING</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px;text-align:center;box-shadow:var(--glow);">
+        <div style="font-family:var(--display);font-size:1.6rem;font-weight:700;color:var(--cyan);text-shadow:0 0 14px var(--cyan);">4S</div>
+        <div style="font-family:var(--mono);font-size:0.55rem;color:var(--muted);margin-top:4px;letter-spacing:0.12em;">S-TIER MEMBERS</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════
+     FOOTER
+═══════════════════════════ -->
+<footer class="wrap">
+  <div><span>SECTOR 43-48</span> // PHILOSOPHY OF ENGINEERING // ALL OPERATIONS CLASSIFIED</div>
+  <div style="color:rgba(0,255,255,0.2);">SESSION #43A8 · nmayuri700@gmail.com · +91 98868 85674</div>
+</footer>
+
+<!-- ═══════════════════════════
+     LIGHTBOX
+═══════════════════════════ -->
+<div id="lb" onclick="lbBg(event)">
+  <button class="lb-btn" id="lb-close" onclick="closeLb()">ESC // CLOSE</button>
+  <button class="lb-btn" id="lb-prev" onclick="navLb(-1)">&#x2039;</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-btn" id="lb-next" onclick="navLb(1)">&#x203a;</button>
+  <div id="lb-count">1 / 9</div>
+</div>
+
+<!-- ═══════════════════════════
+     SCRIPTS
+═══════════════════════════ -->
+<script>
+/* ── Matrix Rain ── */
+(function(){
+  const canvas = document.getElementById('matrix-bg');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ'.split('');
+  const fontSize = 13;
+  let cols = Math.floor(canvas.width / fontSize);
+  const drops = Array.from({length: cols}, () => Math.random() * -100);
+
+  function draw(){
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00FFFF';
+    ctx.font = fontSize + 'px JetBrains Mono, monospace';
+    drops.forEach((y, i) => {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(char, i * fontSize, y * fontSize);
+      if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i] += 0.4;
+    });
+  }
+  setInterval(draw, 45);
+})();
+
+/* ── Clock ── */
+function tick(){
+  const n = new Date();
+  const h = String(n.getHours()).padStart(2,'0');
+  const m = String(n.getMinutes()).padStart(2,'0');
+  const s = String(n.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = h+':'+m+':'+s+' UTC';
+}
+tick(); setInterval(tick, 1000);
+
+/* ── Ping jitter ── */
+setInterval(()=>{
+  document.getElementById('ping').textContent = (Math.floor(Math.random()*8)+10)+'ms';
+}, 2500);
+
+/* ── Lightbox ── */
+const files = Array.from({length:9}, (_,i)=>'file'+i+'.png');
+const names = ['Cover','Table of Content','Philosophy','Vision','Members','Skills','Project-1','Project-2','Contact'];
+let cur = 0;
+function openLb(i){ cur=i; document.getElementById('lb-img').src=files[i]; document.getElementById('lb-count').textContent=(i+1)+' / 9  —  '+names[i].toUpperCase(); document.getElementById('lb').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeLb(){ document.getElementById('lb').classList.remove('open'); document.body.style.overflow=''; }
+function lbBg(e){ if(e.target===document.getElementById('lb')) closeLb(); }
+function navLb(d){ cur=(cur+d+9)%9; openLb(cur); }
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('lb').classList.contains('open')) return;
+  if(e.key==='Escape') closeLb();
+  if(e.key==='ArrowRight') navLb(1);
+  if(e.key==='ArrowLeft') navLb(-1);
+});
+</script>
+</body>
+</html>
